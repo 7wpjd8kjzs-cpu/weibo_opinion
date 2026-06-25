@@ -12,6 +12,7 @@ from pyecharts.charts import WordCloud, Timeline
 from pyecharts import options as opts
 from pyecharts.globals import ThemeType
 import streamlit_echarts
+import requests
 import os
 from PIL import Image
 import random
