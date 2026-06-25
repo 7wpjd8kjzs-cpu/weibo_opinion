@@ -49,69 +49,22 @@ except Exception as e:
     mask_img = None
 
 # ========== 字体兼容 ==========
-def get_font_path():
-    """获取可用的中文字体路径"""
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    # 1. 优先使用项目目录下的字体
-    project_font = os.path.join(BASE_DIR, "simhei.ttf")
-    if os.path.exists(project_font):
-        return project_font
-    
-    # 2. 根据系统选择
-    system = platform.system()
-    
-    if system == "Windows":
-        font_paths = [
-            r"C:/Windows/Fonts/simhei.ttf",
-            r"C:/Windows/Fonts/msyh.ttc",
-            r"C:/Windows/Fonts/simsun.ttc"
-        ]
-    elif system == "Darwin":  # Mac
-        font_paths = [
-            "/System/Library/Fonts/PingFang.ttc",
-            "/System/Library/Fonts/STHeiti Light.ttc",
-            "/Library/Fonts/Arial Unicode.ttf"
-        ]
-    else:  # Linux (包括 Streamlit Cloud)
-        font_paths = [
-            # Noto CJK 字体
-            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-            # WenQuanYi 字体
-            "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
-            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
-            # AR PL 字体
-            "/usr/share/fonts/truetype/arphic/uming.ttc",
-            "/usr/share/fonts/truetype/arphic/ukai.ttc",
-            # DejaVu 字体（备用）
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        ]
-    
-    for fp in font_paths:
-        if os.path.exists(fp):
-            return fp
-    
-    # 3. 尝试使用 matplotlib 查找
-    try:
-        import matplotlib.font_manager as fm
-        for font in fm.findSystemFonts():
-            font_lower = font.lower()
-            if any(name in font_lower for name in ['hei', 'song', 'cjk', 'noto', 'wqy', 'uming']):
-                return font
-    except:
-        pass
-    
-    # 4. 返回 None（wordcloud 会使用默认字体，但中文可能显示为方块）
-    return None
+font_url = "https://github.com/notofonts/noto-cn/raw/main/fonts/ttf/NotoSansCJK-Regular.ttc"
+font_file = "NotoSansCJK.ttc"
 
-# 获取字体
-valid_font = get_font_path()
-if valid_font:
-    st.sidebar.success(f"✅ 字体已加载")
-else:
-    st.sidebar.warning("⚠️ 未找到中文字体，词云可能显示方块")
+if not os.path.exists(font_file):
+    r = requests.get(font_url)
+    with open(font_file, "wb") as f:
+        f.write(r.content)
+
+# 词云，字体从网络下载，不会触发资源权限拦截
+wc_mask = LocalWordCloud(
+    background_color="white",
+    font_path=font_file,
+    mask=mask_img,
+    width=1400, height=700, max_words=1200, max_font_size=130, contour_width=0,
+    color_func=random_color_func
+)
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
