@@ -67,7 +67,7 @@ if all_hot_df.empty:
     st.error("CSV文件读取失败，请检查数据路径！")
 else:
     # 全局总关键词词云（微博图标形状）
-    st.subheader("☁️ 全局总关键词词云（微博图标形状）")
+    st.subheader("☁️ 全局总关键词词云")
     full_text = "".join(all_hot_df["热搜话题"].astype(str).tolist())
     cut_words = jieba.lcut(full_text)
     clean_words = [word for word in cut_words if word not in stop_word_list and len(word) > 1]
