@@ -89,8 +89,6 @@ def get_font_path():
     # 4. 🔥 如果都找不到，返回 None
     return None
 
-# 获取字体
-valid_font = get_font_path()
 
 # 🔥 显示字体状态
 if valid_font:
