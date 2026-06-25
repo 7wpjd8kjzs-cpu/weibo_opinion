@@ -11,3 +11,4 @@ streamlit_echarts
 wordcloud
 openai
 python-dotenv
+Pillow
