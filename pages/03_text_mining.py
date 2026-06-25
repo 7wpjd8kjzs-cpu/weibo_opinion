@@ -50,22 +50,90 @@ except Exception as e:
     mask_img = None
 
 # ========== 字体兼容 ==========
-font_url = "https://github.com/notofonts/noto-cn/raw/main/fonts/ttf/NotoSansCJK-Regular.ttc"
-font_file = "NotoSansCJK.ttc"
+def get_font_path():
+    """获取可用的中文字体路径"""
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    # 1. 优先使用项目目录下的字体
+    project_font = os.path.join(BASE_DIR, "simhei.ttf")
+    if os.path.exists(project_font):
+        return project_font
+    
+    # 2. 检查系统字体（Linux/Streamlit Cloud）
+    system = platform.system()
+    if system == "Linux":
+        # 检查常见的 Linux 中文字体
+        linux_fonts = [
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+            "/usr/share/fonts/truetype/arphic/uming.ttc",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        ]
+        for fp in linux_fonts:
+            if os.path.exists(fp):
+                return fp
+    
+    # 3. 使用 matplotlib 查找
+    try:
+        import matplotlib.font_manager as fm
+        # 尝试查找中文字体
+        for font in fm.findSystemFonts():
+            font_lower = font.lower()
+            if any(name in font_lower for name in ['hei', 'song', 'cjk', 'noto', 'wqy', 'uming', 'sc']):
+                return font
+    except:
+        pass
+    
+    # 4. 🔥 如果都找不到，返回 None
+    return None
 
-if not os.path.exists(font_file):
-    r = requests.get(font_url)
-    with open(font_file, "wb") as f:
-        f.write(r.content)
+# 获取字体
+valid_font = get_font_path()
 
-# 词云，字体从网络下载，不会触发资源权限拦截
-wc_mask = LocalWordCloud(
-    background_color="white",
-    font_path=font_file,
-    mask=mask_img,
-    width=1400, height=700, max_words=1200, max_font_size=130, contour_width=0,
-    color_func=random_color_func
-)
+# 🔥 显示字体状态
+if valid_font:
+    st.sidebar.success(f"✅ 字体: {os.path.basename(valid_font)}")
+else:
+    st.sidebar.warning("⚠️ 未找到中文字体，词云将使用默认字体")
+    st.sidebar.info("💡 请将 simhei.ttf 上传到项目根目录")
+
+# ========== 安全的词云生成函数 ==========
+def safe_generate_wordcloud(text, mask=None):
+    """安全生成词云，处理字体不存在的情况"""
+    try:
+        # 🔥 使用默认字体（中文可能显示方块，但不会报错）
+        if valid_font and os.path.exists(valid_font):
+            wc = LocalWordCloud(
+                background_color="white",
+                font_path=valid_font,
+                mask=mask,
+                width=1400, height=700, max_words=1200,
+                max_font_size=130, contour_width=0,
+                color_func=random_color_func
+            )
+        else:
+            # 不使用自定义字体
+            wc = LocalWordCloud(
+                background_color="white",
+                mask=mask,
+                width=1400, height=700, max_words=1200,
+                max_font_size=130, contour_width=0,
+                color_func=random_color_func
+            )
+        wc.generate(text)
+        return wc
+    except Exception as e:
+        st.warning(f"词云生成使用备用方案: {e}")
+        # 最终备用方案
+        wc = LocalWordCloud(
+            background_color="white",
+            width=1400, height=700, max_words=1200,
+            max_font_size=140, color_func=random_color_func
+        )
+        wc.generate(text)
+        return wc
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
