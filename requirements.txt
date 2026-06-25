@@ -10,3 +10,4 @@ streamlit_agraph
 streamlit_echarts
 wordcloud
 openai
+python-dotenv
