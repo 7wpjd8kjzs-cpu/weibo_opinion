@@ -49,19 +49,16 @@ except Exception as e:
     mask_img = None
 
 # ========== 字体 ==========
-if mask_img is not None:
-    wc_mask = LocalWordCloud(
-        background_color="white",
-        mask=mask_img,
-        width=1400, height=700, max_words=1200, max_font_size=130, contour_width=0,
-        color_func=random_color_func
-    )
-else:
-    wc_backup = LocalWordCloud(
-        background_color="white",
-        width=1400, height=700, max_words=1200, max_font_size=140,
-        color_func=random_color_func
-    )
+font_paths = [
+    r"C:/Windows/Fonts/simhei.ttf",
+    r"C:/Windows/Fonts/msyh.ttc",
+    r"C:/Windows/Fonts/simsun.ttc"
+]
+valid_font = None
+for fp in font_paths:
+    if os.path.exists(fp):
+        valid_font = fp
+        break
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
