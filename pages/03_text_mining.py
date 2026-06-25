@@ -79,47 +79,51 @@ else:
     
     st.divider()
 
-    # ========== 2. 分日期动态时间轴词云 ==========
-    st.subheader("📅 分日期动态时间轴词云")
-    
-    date_list = sorted(all_hot_df["日期"].unique())
-    timeline = Timeline(init_opts=opts.InitOpts(width="100%", height="700px", theme=ThemeType.MACARONS))
+# ========== 分日期动态时间轴词云 ==========
+st.subheader("📅 分日期动态时间轴词云")
 
-    for date in date_list:
-        date_data = all_hot_df[all_hot_df["日期"] == date]
-        date_text = "".join(date_data["热搜话题"].astype(str))
-        words_date = jieba.lcut(date_text)
-        
-        word_count_date = Counter()
-        for w in words_date:
-            if len(w) >= 2 and w not in stop_word_list:
-                word_count_date[w] += 1
-        
-        top30 = word_count_date.most_common(30)
-        
-        if top30:
-            wc_chart = (
-                WordCloud(init_opts=opts.InitOpts(width="100%", height="700px"))
-                .add(
-                    series_name="当日热词",
-                    data_pair=top30,
-                    word_size_range=[20, 90],
-                    shape="circle",
-                    textstyle_opts=opts.TextStyleOpts(color=color_palette)
-                )
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(
-                        title=f"{date} 当日热点词汇",
-                        title_textstyle_opts=opts.TextStyleOpts(color="#004085", font_size=16)
-                    )
+date_list = sorted(all_hot_df["日期"].unique())
+timeline = Timeline(init_opts=opts.InitOpts(width="100%", height="700px", theme=ThemeType.MACARONS))
+
+has_data = False  # 🔥 添加标志变量
+
+for date in date_list:
+    date_data = all_hot_df[all_hot_df["日期"] == date]
+    date_text = "".join(date_data["热搜话题"].astype(str))
+    words_date = jieba.lcut(date_text)
+    
+    word_count_date = Counter()
+    for w in words_date:
+        if len(w) >= 2 and w not in stop_word_list:
+            word_count_date[w] += 1
+    
+    top30 = word_count_date.most_common(30)
+    
+    if top30:
+        wc_chart = (
+            WordCloud(init_opts=opts.InitOpts(width="100%", height="700px"))
+            .add(
+                series_name="当日热词",
+                data_pair=top30,
+                word_size_range=[20, 90],
+                shape="circle",
+                textstyle_opts=opts.TextStyleOpts(color=color_palette)
+            )
+            .set_global_opts(
+                title_opts=opts.TitleOpts(
+                    title=f"{date} 当日热点词汇",
+                    title_textstyle_opts=opts.TextStyleOpts(color="#004085", font_size=16)
                 )
             )
-            timeline.add(wc_chart, date)
+        )
+        timeline.add(wc_chart, date)
+        has_data = True  # 🔥 标记有数据
 
-    if timeline._charts:
-        streamlit_echarts.st_pyecharts(timeline, height=700)
-    else:
-        st.warning("没有足够的数据生成时间轴词云")
+# 🔥 使用 has_data 检查
+if has_data:
+    streamlit_echarts.st_pyecharts(timeline, height=700)
+else:
+    st.warning("没有足够的数据生成时间轴词云")
     
     st.divider()
 
