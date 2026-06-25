@@ -4,3 +4,7 @@ plotly
 numpy
 Pillow
 pyecharts
+scikit-learn
+jieba
+streamlit_agraph
+wordcloud
