@@ -52,7 +52,6 @@ except Exception as e:
 if mask_img is not None:
     wc_mask = LocalWordCloud(
         background_color="white",
-        # font_path=valid_font,
         mask=mask_img,
         width=1400, height=700, max_words=1200, max_font_size=130, contour_width=0,
         color_func=random_color_func
@@ -60,7 +59,6 @@ if mask_img is not None:
 else:
     wc_backup = LocalWordCloud(
         background_color="white",
-        # font_path=valid_font,
         width=1400, height=700, max_words=1200, max_font_size=140,
         color_func=random_color_func
     )
