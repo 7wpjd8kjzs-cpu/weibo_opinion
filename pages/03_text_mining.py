@@ -89,14 +89,6 @@ def get_font_path():
     # 4. 🔥 如果都找不到，返回 None
     return None
 
-
-# 🔥 显示字体状态
-if valid_font:
-    st.sidebar.success(f"✅ 字体: {os.path.basename(valid_font)}")
-else:
-    st.sidebar.warning("⚠️ 未找到中文字体，词云将使用默认字体")
-    st.sidebar.info("💡 请将 simhei.ttf 上传到项目根目录")
-
 # ========== 安全的词云生成函数 ==========
 def safe_generate_wordcloud(text, mask=None):
     """安全生成词云，处理字体不存在的情况"""
