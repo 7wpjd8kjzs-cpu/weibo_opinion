@@ -15,6 +15,7 @@ import streamlit_echarts
 import os
 from PIL import Image
 import random
+from collections import Counter
 
 # ========== 全局数据 ==========
 from data_loader import load_all_data
