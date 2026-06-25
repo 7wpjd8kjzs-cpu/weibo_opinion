@@ -48,17 +48,59 @@ try:
 except Exception as e:
     mask_img = None
 
-# ========== 字体 ==========
-font_paths = [
-    r"C:/Windows/Fonts/simhei.ttf",
-    r"C:/Windows/Fonts/msyh.ttc",
-    r"C:/Windows/Fonts/simsun.ttc"
-]
-valid_font = None
-for fp in font_paths:
-    if os.path.exists(fp):
-        valid_font = fp
-        break
+# ========== 字体兼容 ==========
+def get_font_path():
+    """获取可用的中文字体路径"""
+    # 1. 优先使用项目目录下的字体
+    project_font = os.path.join(BASE_DIR, "simhei.ttf")
+    if os.path.exists(project_font):
+        return project_font
+    
+    # 2. 根据系统选择
+    system = platform.system()
+    
+    if system == "Windows":
+        font_paths = [
+            r"C:/Windows/Fonts/simhei.ttf",
+            r"C:/Windows/Fonts/msyh.ttc",
+            r"C:/Windows/Fonts/simsun.ttc"
+        ]
+    elif system == "Darwin":  # Mac
+        font_paths = [
+            "/System/Library/Fonts/PingFang.ttc",
+            "/System/Library/Fonts/STHeiti Light.ttc",
+            "/Library/Fonts/Arial Unicode.ttf"
+        ]
+    else:  # Linux (包括 Streamlit Cloud)
+        font_paths = [
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+            "/usr/share/fonts/truetype/arphic/uming.ttc",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ]
+    
+    for fp in font_paths:
+        if os.path.exists(fp):
+            return fp
+    
+    # 3. 尝试使用 matplotlib 查找
+    try:
+        import matplotlib.font_manager as fm
+        for font in fm.findSystemFonts():
+            if 'hei' in font.lower() or 'song' in font.lower() or 'cjk' in font.lower():
+                return font
+    except:
+        pass
+    
+    return None
+
+valid_font = get_font_path()
+
+# 如果找不到字体，使用 None（wordcloud 会使用默认字体）
+if valid_font:
+    st.sidebar.success(f"✅ 字体已加载")
+else:
+    st.sidebar.warning("⚠️ 未找到中文字体，词云可能显示方块")
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
