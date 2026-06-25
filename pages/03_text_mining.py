@@ -49,16 +49,13 @@ except Exception as e:
     mask_img = None
 
 # ========== 字体兼容 ==========
-font_paths = [
-    r"C:/Windows/Fonts/simhei.ttf",
-    r"C:/Windows/Fonts/msyh.ttc",
-    r"C:/Windows/Fonts/simsun.ttc"
-]
-valid_font = None
-for fp in font_paths:
-    if os.path.exists(fp):
-        valid_font = fp
-        break
+# 双环境自动适配
+if os.path.exists("simhei.ttf"):
+    # 云端：字体放在项目根目录
+    valid_font = "simhei.ttf"
+else:
+    # 本地电脑运行：使用系统开源中文字体
+    valid_font = "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
