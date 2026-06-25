@@ -49,13 +49,12 @@ except Exception as e:
     mask_img = None
 
 # ========== 字体兼容 ==========
-# 双环境自动适配
-if os.path.exists("simhei.ttf"):
-    # 云端：字体放在项目根目录
-    valid_font = "simhei.ttf"
-else:
-    # 本地电脑运行：使用系统开源中文字体
-    valid_font = "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
+# 当前脚本所在目录
+current_file = os.path.abspath(__file__)
+# 项目根目录（往上跳一级）
+root_path = os.path.dirname(os.path.dirname(current_file))
+# 拼接字体完整路径
+valid_font = os.path.join(root_path, "simhei.ttf")
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
