@@ -1,0 +1,105 @@
+/* 全局浅蓝页面背景 */
+.stApp {
+    background-color: #F0F8FF;
+}
+
+/* 标题蓝色配色 */
+h1, h2, h3, .st-title, .st-subheader {
+    color: #004085 !important;
+    font-weight: 600;
+}
+
+/* 自定义指标卡片样式（和你截图完全一致） */
+.metric-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 3px 12px #cce5ff;
+    height: 160px;
+    position: relative;
+}
+.metric-label {
+    font-size: 16px;
+    color: #557a95;
+    margin-bottom: 10px;
+}
+.metric-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #003366;
+}
+
+/* Streamlit原生metric卡片美化 */
+div[data-testid="stMetric"] {
+    background-color: #E6F2FF;
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 2px 8px #b3d9ff;
+}
+[data-testid="stMetricValue"] {
+    color: #004085 !important;
+    font-size: 28px !important;
+    font-weight: 700;
+}
+[data-testid="stMetricLabel"] {
+    color: #446688;
+    font-size: 14px;
+}
+[data-testid="stMetricDelta"] {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* 按钮浅蓝样式 */
+div.stButton > button:first-child {
+    background-color: #99CCFF !important;
+    color: #00264d !important;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+}
+div.stButton > button:hover {
+    background-color: #80BFFF !important;
+    box-shadow: 0 2px 8px #b3d9ff;
+}
+
+/* 分割线、表格、折叠面板美化 */
+hr {
+    border-color: #b3d9ff !important;
+    border-width: 2px;
+}
+div[data-testid="stDataFrame"] {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px #cce5ff;
+    background: #ffffff;
+}
+div[data-testid="stExpander"] {
+    background-color: #E6F2FF;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 8px #cce5ff;
+}
+div[data-testid="stExpander"] summary {
+    color: #004085;
+    font-weight: 600;
+}
+
+/* 图表容器美化 */
+div[data-testid="stPlotlyChart"] {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px 15px !important;
+    box-shadow: 0 2px 10px #cce5ff;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+/* 侧边栏样式 */
+section[data-testid="stSidebar"] {
+    background-color: #E6F2FF;
+    border-right: 2px solid #b3d9ff;
+}
+section[data-testid="stSidebar"] .stRadio label {
+    color: #004085;
+    font-weight: 500;
+}
