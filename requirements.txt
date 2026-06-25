@@ -9,3 +9,4 @@ jieba
 streamlit_agraph
 streamlit_echarts
 wordcloud
+openai
