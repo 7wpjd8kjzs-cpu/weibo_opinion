@@ -49,7 +49,12 @@ except Exception as e:
     mask_img = None
 
 # ========== 字体 ==========
-valid_font = "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
+valid_font = None
+try:
+    # 尝试系统字体
+    valid_font = "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
+except:
+    valid_font = None
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
