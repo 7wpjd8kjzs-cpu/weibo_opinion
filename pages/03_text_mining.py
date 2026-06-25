@@ -16,49 +16,23 @@ import os
 from PIL import Image
 import random
 
-# 全局数据
+# ========== 全局数据 ==========
 from data_loader import load_all_data
 all_hot_df, comment_df = load_all_data()
 all_hot_df = all_hot_df.copy()
 comment_df = comment_df.copy()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# ========== 停止词 ==========
 stop_word_list = {"的", "了", "是", "在", "和", "有", "我", "你", "他", "这", "那", "都", "就", "也", "不", "很", "一个", "一批", "这个", "没有", "全部", "什么", "怎么", "可以", "还是"}
-# 完整彩色色板
+
+# ========== 颜色 ==========
 color_palette = [
     "#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#1abc9c",
     "#3498db", "#9b59b6", "#8e44ad", "#e91e63", "#009688",
     "#FF4500", "#32CD32", "#1E90FF", "#FF69B4", "#9370DB"
 ]
-
-# 自定义wordcloud随机彩色函数
-def random_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-    return "hsl(%d, 80%%, 40%%)" % np.random.randint(0, 360)
-
-# ========== 蒙版图片读取 ==========
-mask_img = None
-mask_path = os.path.join(BASE_DIR, "weibo_mask.png")
-try:
-    mask_img = Image.open(mask_path).convert("L")
-    mask_array = np.array(mask_img)
-    avg_bright = np.mean(mask_array)
-    if avg_bright < 128:
-        mask_array = 255 - mask_array
-    mask_img = mask_array
-except Exception as e:
-    mask_img = None
-
-# ========== 字体兼容 ==========
-font_paths = [
-    r"C:/Windows/Fonts/simhei.ttf",
-    r"C:/Windows/Fonts/msyh.ttc",
-    r"C:/Windows/Fonts/simsun.ttc"
-]
-valid_font = None
-for fp in font_paths:
-    if os.path.exists(fp):
-        valid_font = fp
-        break
 
 st.title("📝 热搜文本语义挖掘")
 st.divider()
@@ -66,76 +40,86 @@ st.divider()
 if all_hot_df.empty:
     st.error("CSV文件读取失败，请检查数据路径！")
 else:
-    # 全局总关键词词云（微博图标形状）
-    st.subheader("☁️ 全局总关键词词云（微博图标形状）")
+    # ========== 1. 全局词云（pyecharts） ==========
+    st.subheader("☁️ 全局热搜关键词云")
+    
+    # 统计词频
     full_text = "".join(all_hot_df["热搜话题"].astype(str).tolist())
-    cut_words = jieba.lcut(full_text)
-    clean_words = [word for word in cut_words if word not in stop_word_list and len(word) > 1]
-    text_join = " ".join(clean_words)
-
-    try:
-        if mask_img is not None:
-            wc_mask = LocalWordCloud(
-                background_color="white",
-                font_path=valid_font,
-                mask=mask_img,
-                width=1400, height=700, max_words=1200, max_font_size=130, contour_width=0,
-                color_func=random_color_func
+    words = jieba.lcut(full_text)
+    word_count = Counter()
+    for w in words:
+        if len(w) >= 2 and w not in stop_word_list:
+            word_count[w] += 1
+    
+    # 取前50个
+    top_words = word_count.most_common(50)
+    
+    if top_words:
+        # 创建词云
+        wc_global = (
+            WordCloud(init_opts=opts.InitOpts(width="100%", height="600px"))
+            .add(
+                series_name="热词",
+                data_pair=top_words,
+                word_size_range=[20, 100],
+                shape="circle",
+                textstyle_opts=opts.TextStyleOpts(color=color_palette)
             )
-            wc_mask.generate(text_join)
-            st.image(wc_mask.to_image(), width=1200)
-        else:
-            wc_backup = LocalWordCloud(
-                background_color="white",
-                font_path=valid_font,
-                width=1400, height=700, max_words=1200, max_font_size=140,
-                color_func=random_color_func
+            .set_global_opts(
+                title_opts=opts.TitleOpts(
+                    title="全局热搜关键词云",
+                    title_textstyle_opts=opts.TextStyleOpts(color="#004085", font_size=16)
+                )
             )
-            wc_backup.generate(text_join)
-            st.image(wc_backup.to_image(), width=1200)
-    except Exception as e:
-        wc_backup = LocalWordCloud(
-            background_color="white",
-            font_path=valid_font,
-            width=1400, height=700, max_words=1200, max_font_size=140,
-            color_func=random_color_func
         )
-        wc_backup.generate(text_join)
-        st.image(wc_backup.to_image(), width=1200)
+        streamlit_echarts.st_pyecharts(wc_global, height=600)
+    else:
+        st.warning("没有足够的词汇生成词云")
+    
     st.divider()
 
-    # ====================== 修复：分日期动态时间轴彩色词云 ======================
+    # ========== 2. 分日期动态时间轴词云 ==========
     st.subheader("📅 分日期动态时间轴词云")
+    
     date_list = sorted(all_hot_df["日期"].unique())
     timeline = Timeline(init_opts=opts.InitOpts(width="100%", height="700px", theme=ThemeType.MACARONS))
 
     for date in date_list:
         date_data = all_hot_df[all_hot_df["日期"] == date]
         date_text = "".join(date_data["热搜话题"].astype(str))
-        words = jieba.lcut(date_text)
-        word_count_dict = {}
-        for w in words:
+        words_date = jieba.lcut(date_text)
+        
+        word_count_date = Counter()
+        for w in words_date:
             if len(w) >= 2 and w not in stop_word_list:
-                word_count_dict[w] = word_count_dict.get(w, 0)
-        top30 = sorted(word_count_dict.items(), key=lambda x: x[1], reverse=True)[:30]
-
-        wc_chart = (
-            WordCloud(init_opts=opts.InitOpts(width="100%", height="700px"))
-            .add(
-                series_name="当日热词",
-                data_pair=top30,
-                word_size_range=[20, 90],
-                shape="circle",
-                # 1.9.0 标准颜色配置，循环彩色
-                textstyle_opts=opts.TextStyleOpts(color=color_palette)
+                word_count_date[w] += 1
+        
+        top30 = word_count_date.most_common(30)
+        
+        if top30:
+            wc_chart = (
+                WordCloud(init_opts=opts.InitOpts(width="100%", height="700px"))
+                .add(
+                    series_name="当日热词",
+                    data_pair=top30,
+                    word_size_range=[20, 90],
+                    shape="circle",
+                    textstyle_opts=opts.TextStyleOpts(color=color_palette)
+                )
+                .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=f"{date} 当日热点词汇",
+                        title_textstyle_opts=opts.TextStyleOpts(color="#004085", font_size=16)
+                    )
+                )
             )
-            .set_global_opts(
-                title_opts=opts.TitleOpts(title=f"{date} 当日热点词汇", title_textstyle_opts=opts.TextStyleOpts(color="#004085", font_size=16))
-            )
-        )
-        timeline.add(wc_chart, date)
+            timeline.add(wc_chart, date)
 
-    streamlit_echarts.st_pyecharts(timeline, height=700)
+    if timeline._charts:
+        streamlit_echarts.st_pyecharts(timeline, height=700)
+    else:
+        st.warning("没有足够的数据生成时间轴词云")
+    
     st.divider()
 
     # ====================== 【彻底修复桑基图报错】旧版Plotly正确写法 ======================
