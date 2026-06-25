@@ -51,6 +51,8 @@ except Exception as e:
 # ========== 字体兼容 ==========
 def get_font_path():
     """获取可用的中文字体路径"""
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
     # 1. 优先使用项目目录下的字体
     project_font = os.path.join(BASE_DIR, "simhei.ttf")
     if os.path.exists(project_font):
@@ -73,10 +75,18 @@ def get_font_path():
         ]
     else:  # Linux (包括 Streamlit Cloud)
         font_paths = [
+            # Noto CJK 字体
             "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+            # WenQuanYi 字体
             "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+            # AR PL 字体
             "/usr/share/fonts/truetype/arphic/uming.ttc",
+            "/usr/share/fonts/truetype/arphic/ukai.ttc",
+            # DejaVu 字体（备用）
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
         ]
     
     for fp in font_paths:
@@ -87,16 +97,17 @@ def get_font_path():
     try:
         import matplotlib.font_manager as fm
         for font in fm.findSystemFonts():
-            if 'hei' in font.lower() or 'song' in font.lower() or 'cjk' in font.lower():
+            font_lower = font.lower()
+            if any(name in font_lower for name in ['hei', 'song', 'cjk', 'noto', 'wqy', 'uming']):
                 return font
     except:
         pass
     
+    # 4. 返回 None（wordcloud 会使用默认字体，但中文可能显示为方块）
     return None
 
+# 获取字体
 valid_font = get_font_path()
-
-# 如果找不到字体，使用 None（wordcloud 会使用默认字体）
 if valid_font:
     st.sidebar.success(f"✅ 字体已加载")
 else:
